@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Fitness Gym — Client + Admin (Single File, Responsive & Fixed)</title>
+  <meta name="description" content="Single-file responsive gym website with client pages and admin panel (frontend demo)." />
+
+  <style>
+    :root{
+      --bg:#071422;
+      --card:#0d1a26;
+      --muted:#cbd5e1;
+      --accent:#ef4444;
+      --glass: rgba(255,255,255,0.03);
+      --max-width:1100px;
+      --radius:12px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial;color:var(--muted);background:
+      linear-gradient(180deg,#061018 0%, #071522 100%);}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:var(--max-width);margin:0 auto;padding:24px}
+
+    /* Header */
+    header{position:sticky;left:0;right:0;top:0;backdrop-filter: blur(6px);background:linear-gradient(180deg, rgba(6,8,12,0.6), rgba(6,8,12,0.45));border-bottom:1px solid rgba(255,255,255,0.03);z-index:999}
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;max-width:var(--max-width);margin:0 auto}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#ff7a7a);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff}
+    .brand h1{font-size:18px;margin:0;color:#fff}
+    nav ul{display:flex;gap:8px;align-items:center;list-style:none;margin:0;padding:0}
+    nav li{padding:2px}
+    nav a.navlink{padding:8px 12px;border-radius:8px;display:inline-block;color:var(--muted)}
+    nav a.navlink:hover, nav a.navlink.active{background:var(--glass);color:#fff}
+    .actions{display:flex;gap:8px;align-items:center}
+    .btn{background:var(--accent);color:#fff;padding:8px 12px;border-radius:8px;border:0;cursor:pointer}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+    .hamburger{display:none;width:40px;height:40px;border-radius:8px;align-items:center;justify-content:center;cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--muted)}
+
+    /* Sections */
+    section{padding:88px 20px 60px}
+    .hero{min-height:54vh;background-image:linear-gradient(180deg, rgba(0,0,0,0.30), rgba(0,0,0,0.30)), url('https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=1500&q=80');background-size:cover;background-position:center;border-radius:var(--radius);display:flex;align-items:center}
+    .hero .inner{padding:36px;background:linear-gradient(180deg, rgba(2,6,23,0.45), rgba(2,6,23,0.25));border-radius:var(--radius);color:#fff;max-width:840px}
+    .hero h2{font-size:34px;margin:0 0 12px}
+    .hero p{margin:0 0 18px;color:#e6eef8}
+
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+    .card{background:var(--card);padding:18px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
+    .muted{color:rgba(203,213,225,0.72)}
+
+    /* Trainers / gallery images */
+    .trainers img, .gallery img{width:100%;height:160px;object-fit:cover;border-radius:8px}
+
+    /* Forms */
+    form input, form textarea, select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:transparent;color:var(--muted)}
+    form label{display:block;font-size:13px;margin-bottom:6px;color:#e6eef8}
+    .small{font-size:13px;color:rgba(203,213,225,0.6)}
+
+    table{width:100%;border-collapse:collapse;color:var(--muted)}
+    th,td{padding:12px;border-bottom:1px solid rgba(255,255,255,0.02);text-align:left}
+    th{color:#fff}
+    footer{padding:30px 20px;text-align:center;color:rgba(203,213,225,0.6)}
+
+    /* admin */
+    .admin-bar{background:linear-gradient(90deg, rgba(8,10,13,0.9), rgba(12,14,18,0.9));padding:12px;border-radius:10px;margin-bottom:18px;display:flex;gap:12px;align-items:center}
+    .admin-menu{display:flex;gap:8px}
+
+    /* responsive */
+    @media (max-width:900px){
+      nav ul{display:none;position:fixed;left:12px;right:12px;top:70px;background:linear-gradient(180deg, rgba(6,8,12,0.95), rgba(6,8,12,0.95));border-radius:10px;padding:12px;flex-direction:column;gap:8px;z-index:999}
+      .hamburger{display:flex}
+      .hero h2{font-size:24px}
+      section{padding:84px 12px 40px}
+    }
+
+    /* single-page toggling */
+    .page{display:none}
+    .page.active{display:block}
+
+    /* small utilities */
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .col{flex:1}
+    .badge{background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:999px;font-size:12px}
+    .center{text-align:center}
+    /* focus for accessibility */
+    a:focus, button:focus, input:focus, textarea:focus {outline:2px solid rgba(239,68,68,0.2); outline-offset:2px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav">
+      <div class="brand" aria-label="Brand">
+        <div class="logo" aria-hidden="true">FG</div>
+        <div>
+          <h1>Fitness Gym</h1>
+          <div class="small">Strength • Cardio • Wellness</div>
+        </div>
+      </div>
+
+      <nav>
+        <ul id="main-nav" role="navigation" aria-label="Primary">
+          <li><a href="#" class="navlink" data-page="home">Home</a></li>
+          <li><a href="#" class="navlink" data-page="about">About</a></li>
+          <li><a href="#" class="navlink" data-page="services">Services</a></li>
+          <li><a href="#" class="navlink" data-page="membership">Membership</a></li>
+          <li><a href="#" class="navlink" data-page="contact">Contact</a></li>
+          <li><a href="#" id="show-admin" class="badge" title="Admin panel (demo)">Admin</a></li>
+        </ul>
+      </nav>
+
+      <div class="actions">
+        <button class="btn" id="joinBtn">Join Now</button>
+        <button class="hamburger" id="hamb" aria-expanded="false" aria-controls="main-nav">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap" id="app">
+    <!-- CLIENT PAGES -->
+    <section id="home" class="page active" aria-labelledby="homeTitle">
+      <div class="hero" role="img" aria-label="Gym hero image">
+        <div class="inner">
+          <h2 id="homeTitle">Transform Your Body — Start Today</h2>
+          <p>Personal training, group classes and wellness programs built for results. Friendly trainers and flexible timings.</p>
+          <div class="row" style="margin-top:12px">
+            <button class="btn" onclick="showPage('membership')">View Plans</button>
+            <button class="btn ghost" onclick="showPage('contact')">Contact Us</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="page" aria-labelledby="aboutTitle">
+      <h2 id="aboutTitle">About Us</h2>
+      <div class="card">
+        <p class="muted">We are a community focused gym founded in 2015. Our mission is to make fitness accessible and effective — modern equipment, certified trainers and tailored programs for all fitness levels.</p>
+      </div>
+    </section>
+
+    <section id="services" class="page" aria-labelledby="servicesTitle">
+      <h2 id="servicesTitle">Services</h2>
+      <div class="grid" id="client-services">
+        <!-- services will be injected from storage or defaults -->
+      </div>
+    </section>
+
+    <section id="membership" class="page" aria-labelledby="membershipTitle">
+      <h2 id="membershipTitle">Membership Plans</h2>
+      <div class="grid">
+        <div class="card"><h3>Basic</h3><p class="muted">1 month access • ₹1500</p></div>
+        <div class="card"><h3>Standard</h3><p class="muted">3 months • ₹3500</p></div>
+        <div class="card"><h3>Premium</h3><p class="muted">6 months • ₹6000</p></div>
+        <div class="card"><h3>Annual</h3><p class="muted">12 months • ₹10,000</p></div>
+      </div>
+    </section>
+
+    <section id="gallery" class="page" aria-labelledby="galleryTitle">
+      <h2 id="galleryTitle">Gallery</h2>
+      <div class="grid" id="client-gallery">
+        <!-- images injected -->
+      </div>
+    </section>
+
+    <section id="contact" class="page" aria-labelledby="contactTitle">
+      <h2 id="contactTitle">Contact</h2>
+      <div class="card" style="max-width:640px;margin:auto">
+        <form id="contactForm" novalidate>
+          <label for="name">Name</label>
+          <input id="name" type="text" placeholder="Your name" required />
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="Your email" required />
+          <label for="message">Message</label>
+          <textarea id="message" rows="5" placeholder="Message" required></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn" type="submit">Send</button>
+            <button class="btn ghost" type="button" onclick="showPage('home')">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ADMIN PAGES -->
+    <section id="admin-login" class="page" aria-labelledby="adminLoginTitle">
+      <h2 id="adminLoginTitle">Admin Login</h2>
+      <div class="card" style="max-width:420px;margin:auto">
+        <form id="adminLoginForm">
+          <label for="adminUser">Username</label>
+          <input id="adminUser" type="text" value="admin" required />
+          <label for="adminPass">Password</label>
+          <input id="adminPass" type="password" value="" required />
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn" type="submit">Login</button>
+            <button class="btn ghost" type="button" onclick="showPage('home')">Exit</button>
+          </div>
+          <p class="small" style="margin-top:8px">Demo credentials: <strong>admin</strong> / <strong>admin123</strong></p>
+        </form>
+      </div>
+    </section>
+
+    <section id="admin-dashboard" class="page" aria-labelledby="adminTitle">
+      <h2 id="adminTitle">Admin Dashboard</h2>
+
+      <div class="admin-bar" role="navigation" aria-label="Admin menu">
+        <div class="admin-menu">
+          <button class="btn" onclick="showAdmin('dashboard')">Dashboard</button>
+          <button class="btn ghost" onclick="showAdmin('users')">Users</button>
+          <button class="btn ghost" onclick="showAdmin('services')">Services</button>
+          <button class="btn ghost" onclick="showAdmin('gallery')">Gallery</button>
+          <button class="btn ghost" onclick="showAdmin('messages')">Messages</button>
+        </div>
+        <div style="margin-left:auto" id="admin-info">Logged in as <strong id="adminName">admin</strong></div>
+      </div>
+
+      <div id="admin-pages">
+        <div id="adm-dashboard" class="admin-page">
+          <div class="row">
+            <div class="card col center"><h3>Total Members</h3><div style="font-size:28px;margin-top:12px" id="stat-members">—</div></div>
+            <div class="card col center"><h3>Active Plans</h3><div style="font-size:28px;margin-top:12px" id="stat-plans">—</div></div>
+            <div class="card col center"><h3>Messages</h3><div style="font-size:28px;margin-top:12px" id="stat-messages">—</div></div>
+          </div>
+        </div>
+
+        <div id="adm-users" class="admin-page hidden">
+          <h3>Manage Users</h3>
+          <div class="card">
+            <table id="usersTable">
+              <thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Action</th></tr></thead>
+              <tbody><!-- users populated --></tbody>
+            </table>
+            <div style="margin-top:12px">
+              <form id="addUserForm" style="display:flex;gap:8px;flex-wrap:wrap">
+                <input id="newUserName" type="text" placeholder="Name" required/>
+                <input id="newUserEmail" type="email" placeholder="Email" required/>
+                <select id="newUserPlan"><option>Basic</option><option>Standard</option><option>Premium</option></select>
+                <button class="btn" type="submit">Add User</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div id="adm-services" class="admin-page hidden">
+          <h3>Manage Services</h3>
+          <div class="card">
+            <form id="addServiceForm" style="display:flex;gap:8px;flex-wrap:wrap">
+              <input id="svcName" type="text" placeholder="Service name" required />
+              <input id="svcDesc" type="text" placeholder="Short description" required />
+              <button class="btn" type="submit">Add Service</button>
+            </form>
+            <ul id="svcList" style="margin-top:12px"></ul>
+          </div>
+        </div>
+
+        <div id="adm-gallery" class="admin-page hidden">
+          <h3>Manage Gallery</h3>
+          <div class="card">
+            <p class="muted">Add image URLs (demo). Images will appear in client gallery.</p>
+            <form id="addImageForm" style="display:flex;gap:8px;flex-wrap:wrap">
+              <input id="imgUrl" type="url" placeholder="Image URL" required />
+              <button class="btn" type="submit">Add Image</button>
+            </form>
+            <div id="galleryList" style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px"></div>
+          </div>
+        </div>
+
+        <div id="adm-messages" class="admin-page hidden">
+          <h3>Messages</h3>
+          <div class="card">
+            <table>
+              <thead><tr><th>Name</th><th>Email</th><th>Message</th><th>Action</th></tr></thead>
+              <tbody id="messagesTable"><!-- messages populated --></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © 2025 Fitness Gym — Built with ❤️. Toggle admin via the "Admin" badge in the header.
+  </footer>
+
+  <script>
+    /* --------- Utilities & Data (persisted to localStorage) --------- */
+    const STORAGE_KEYS = {SERVICES:'fg_services', IMAGES:'fg_images', MESSAGES:'fg_messages', USERS:'fg_users'};
+
+    const defaults = {
+      services: [
+        { name:'Strength Training', desc:'Custom lifting programs and coaching.' },
+        { name:'Cardio & HIIT', desc:'Heart-pumping group sessions.' },
+        { name:'Yoga & Mobility', desc:'Improve flexibility & recovery.' },
+        { name:'Nutrition Coaching', desc:'Meal plans and progress tracking.' }
+      ],
+      images: [
+        'https://images.unsplash.com/photo-1554284126-aa88f22d8b74?auto=format&fit=crop&w=800&q=60',
+        'https://images.unsplash.com/photo-1518611012118-f0c5b0cda7db?auto=format&fit=crop&w=800&q=60',
+        'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?auto=format&fit=crop&w=800&q=60'
+      ],
+      users: [
+        {name:'Ravi', email:'ravi@example.com', plan:'Premium'},
+        {name:'Anita', email:'anita@example.com', plan:'Standard'}
+      ],
+      messages: []
+    };
+
+    function load(key, def){ try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; }catch(e){ return def; } }
+    function save(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
+
+    let SERVICES = load(STORAGE_KEYS.SERVICES, defaults.services);
+    let IMAGES = load(STORAGE_KEYS.IMAGES, defaults.images);
+    let USERS = load(STORAGE_KEYS.USERS, defaults.users);
+    let MESSAGES = load(STORAGE_KEYS.MESSAGES, defaults.messages);
+
+    /* --------- SPA page handling --------- */
+    const pages = document.querySelectorAll('.page');
+    function showPage(id){
+      pages.forEach(p => p.classList.remove('active'));
+      const el = document.getElementById(id);
+      if(el) el.classList.add('active');
+      // hide mobile nav if open
+      closeMobileNav();
+      // also default to showing client view (not admin) unless id starts with 'admin'
+      if(!id.startsWith('admin')) {
+        document.getElementById('admin-dashboard') && document.getElementById('admin-dashboard').classList.add('hidden');
+      }
+      // update active nav link highlight
+      document.querySelectorAll('nav a.navlink').forEach(a => a.classList.remove('active'));
+      const link = document.querySelector(`nav a[data-page="${id}"]`);
+      if(link) link.classList.add('active');
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    document.querySelectorAll('nav a[data-page]').forEach(a=>{
+      a.addEventListener('click', e => { e.preventDefault(); const page = a.dataset.page; showPage(page); });
+    });
+
+    // hamburger
+    const hamb = document.getElementById('hamb');
+    hamb.addEventListener('click', ()=>{
+      const nav = document.querySelector('nav ul');
+      const expanded = hamb.getAttribute('aria-expanded') === 'true';
+      hamb.setAttribute('aria-expanded', String(!expanded));
+      nav.style.display = expanded ? 'none' : 'flex';
+    });
+    function closeMobileNav(){
+      const nav = document.querySelector('nav ul');
+      nav.style.display = window.innerWidth <= 900 ? 'none' : 'flex';
+      hamb.setAttribute('aria-expanded','false');
+    }
+    window.addEventListener('resize', closeMobileNav);
+    closeMobileNav();
+
+    /* --------- Render client content from stored data --------- */
+    function renderServices(){
+      const wrap = document.getElementById('client-services');
+      wrap.innerHTML = '';
+      SERVICES.forEach(s => {
+        const d = document.createElement('div'); d.className='card';
+        d.innerHTML = `<h3>${escapeHtml(s.name)}</h3><p class="muted">${escapeHtml(s.desc)}</p>`;
+        wrap.appendChild(d);
+      });
+    }
+    function renderGallery(){
+      const wrap = document.getElementById('client-gallery');
+      wrap.innerHTML = '';
+      IMAGES.forEach(url => {
+        const el = document.createElement('div'); el.className='card';
+        const img = document.createElement('img'); img.src = url; img.alt = 'Gallery image';
+        img.style.height='160px'; img.style.objectFit='cover';
+        el.appendChild(img);
+        wrap.appendChild(el);
+      });
+    }
+
+    /* --------- Contact form: validation + store message --------- */
+    const contactForm = document.getElementById('contactForm');
+    contactForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const message = document.getElementById('message').value.trim();
+      if(!name || !email || !message){ alert('Please fill all fields.'); return; }
+      const msg = {name, email, message, time: new Date().toISOString()};
+      MESSAGES.push(msg); save(STORAGE_KEYS.MESSAGES, MESSAGES);
+      alert('Message sent — thank you!');
+      contactForm.reset();
+      refreshMessages();
+      updateStats();
+    });
+
+    /* --------- Admin login (front-end demo) --------- */
+    document.getElementById('show-admin').addEventListener('click', (e)=>{
+      e.preventDefault();
+      showPage('admin-login');
+    });
+    document.getElementById('adminLoginForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const user = document.getElementById('adminUser').value;
+      const pass = document.getElementById('adminPass').value;
+      if(user === 'admin' && pass === 'admin123'){
+        showPage('admin-dashboard');
+        document.getElementById('admin-dashboard').classList.remove('hidden');
+        showAdmin('dashboard');
+      } else {
+        alert('Invalid credentials (demo). Use admin / admin123');
+      }
+    });
+    function showAdmin(name){
+      document.querySelectorAll('.admin-page').forEach(x => x.classList.add('hidden'));
+      const target = document.getElementById('adm-' + name);
+      if(target) target.classList.remove('hidden');
+      // update admin stats
+      updateStats();
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    /* --------- Admin: Users management --------- */
+    function renderUsers(){
+      const tbody = document.querySelector('#usersTable tbody');
+      tbody.innerHTML = '';
+      USERS.forEach((u,i)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${escapeHtml(u.name)}</td><td>${escapeHtml(u.email)}</td><td>${escapeHtml(u.plan)}</td>
+          <td><button class="btn ghost" onclick="removeUser(${i})">Remove</button></td>`;
+        tbody.appendChild(tr);
+      });
+    }
+    function removeUser(index){
+      if(!confirm('Remove this user?')) return;
+      USERS.splice(index,1); save(STORAGE_KEYS.USERS, USERS); renderUsers();
+      updateStats();
+    }
+    document.getElementById('addUserForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const n = document.getElementById('newUserName').value.trim();
+      const em = document.getElementById('newUserEmail').value.trim();
+      const p = document.getElementById('newUserPlan').value;
+      if(!n || !em){ alert('Provide name and email'); return; }
+      USERS.push({name:n, email:em, plan:p}); save(STORAGE_KEYS.USERS, USERS);
+      renderUsers(); this.reset(); updateStats();
+    });
+
+    /* --------- Admin: Services management --------- */
+    function renderServicesAdmin(){
+      const list = document.getElementById('svcList');
+      list.innerHTML = '';
+      SERVICES.forEach((s, idx) => {
+        const li = document.createElement('li');
+        li.innerHTML = `${escapeHtml(s.name)} — ${escapeHtml(s.desc)} <button class="btn ghost" onclick="removeService(${idx})">Remove</button>`;
+        list.appendChild(li);
+      });
+    }
+    document.getElementById('addServiceForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const n = document.getElementById('svcName').value.trim();
+      const d = document.getElementById('svcDesc').value.trim();
+      if(!n || !d){ alert('Provide service name and description'); return; }
+      SERVICES.push({name:n, desc:d}); save(STORAGE_KEYS.SERVICES, SERVICES);
+      renderServices(); renderServicesAdmin(); this.reset();
+    });
+    function removeService(idx){
+      if(!confirm('Remove this service?')) return;
+      SERVICES.splice(idx,1); save(STORAGE_KEYS.SERVICES, SERVICES);
+      renderServices(); renderServicesAdmin();
+    }
+
+    /* --------- Admin: Gallery management --------- */
+    function renderGalleryAdmin(){
+      const wrap = document.getElementById('galleryList'); wrap.innerHTML='';
+      IMAGES.forEach((url, idx) => {
+        const img = document.createElement('img'); img.src = url; img.alt='Image'; img.style.width='100%'; img.style.borderRadius='6px';
+        const wrapper = document.createElement('div');
+        wrapper.appendChild(img);
+        wrapper.innerHTML += `<div style="margin-top:6px"><button class="btn ghost" onclick="removeImage(${idx})">Remove</button></div>`;
+        wrap.appendChild(wrapper);
+      });
+    }
+    document.getElementById('addImageForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const url = document.getElementById('imgUrl').value.trim();
+      if(!url){ alert('Image URL required'); return; }
+      IMAGES.push(url); save(STORAGE_KEYS.IMAGES, IMAGES);
+      renderGallery(); renderGalleryAdmin();
+      document.getElementById('imgUrl').value='';
+    });
+    function removeImage(idx){
+      if(!confirm('Remove this image?')) return;
+      IMAGES.splice(idx,1); save(STORAGE_KEYS.IMAGES, IMAGES);
+      renderGallery(); renderGalleryAdmin();
+    }
+
+    /* --------- Admin: Messages (populated from contact form) --------- */
+    function refreshMessages(){
+      const tbody = document.getElementById('messagesTable');
+      tbody.innerHTML = '';
+      MESSAGES.forEach((m,i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${escapeHtml(m.name)}</td><td>${escapeHtml(m.email)}</td><td>${escapeHtml(m.message)}</td>
+                        <td><button class="btn ghost" onclick="deleteMessage(${i})">Delete</button></td>`;
+        tbody.appendChild(tr);
+      });
+      updateStats();
+    }
+    function deleteMessage(i){
+      if(!confirm('Delete this message?')) return;
+      MESSAGES.splice(i,1); save(STORAGE_KEYS.MESSAGES, MESSAGES); refreshMessages();
+    }
+
+    /* --------- Stats & helpers --------- */
+    function updateStats(){
+      document.getElementById('stat-members').textContent = USERS.length;
+      document.getElementById('stat-plans').textContent = [...USERS].filter(u => u.plan).length;
+      document.getElementById('stat-messages').textContent = MESSAGES.length;
+      // also update admin users/messages table and lists
+      renderUsers(); renderServicesAdmin(); renderGalleryAdmin(); refreshMessages();
+    }
+
+    /* simple HTML escape */
+    function escapeHtml(str){ return String(str).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); }
+
+    /* global removers for inline onclick handlers used above */
+    window.removeUser = removeUser;
+    window.removeService = removeService;
+    window.removeImage = removeImage;
+    window.deleteMessage = deleteMessage;
+    window.showPage = showPage;
+    window.showAdmin = showAdmin;
+
+    /* join button */
+    document.getElementById('joinBtn').addEventListener('click', ()=> showPage('membership'));
+
+    /* initial render */
+    renderServices();
+    renderGallery();
+    updateStats();
+    refreshMessages();
+    renderUsers();
+    renderServicesAdmin();
+    renderGalleryAdmin();
+    // ensure initial nav highlight
+    document.querySelector('nav a[data-page="home"]').classList.add('active');
+
+  </script>
+</body>
+</html>
